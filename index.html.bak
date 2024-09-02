@@ -1,0 +1,126 @@
+<html>
+  <head>
+    <script src="https://lf-unpkg.volccdn.com/obj/vcloudfe/sdk/@volcengine/rtc/4.60.7/1711627798987/VolengineRTC_Web_4.60.7.js"></script>
+    <style>
+      button {
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div style="width: 100px">
+      <div id="count"></div>
+      <button id="btn1">sdk触发权限</button>
+      <button id="btn2">原生触发权限</button>
+      <button id="startCapture">开始采集</button>
+    </div>
+    <div id="domA"></div>
+    <script>
+      ;(async function () {
+        let engine = null
+        let isCreating = false
+        let count = 5
+        let timer = null
+        const startCapture = document.getElementById('startCapture')
+        const countDom = document.getElementById('count')
+        const btn1 = document.getElementById('btn1')
+        const btn2 = document.getElementById('btn2')
+
+        const createInstance = async function () {
+          if (isCreating) {
+            return
+          }
+          if (engine) {
+            engine.stopAudioCapture()
+            engine.stopVideoCapture()
+            isAudio = false
+            VERTC.destroyEngine(engine)
+            engine = null
+          }
+
+          // rtc那边给的appid:5a7451222679214f668e7085
+          // vxi的appid:652f79616349b2015ef26d20
+          engine = VERTC.createEngine('652f79616349b2015ef26d20')
+          const devices = await VERTC.enumerateDevices()
+          const inputs = {
+            audioInputs: devices.filter(
+              item => item.deviceId && item.kind === 'audioinput'
+            ),
+            videoInputs: devices.filter(
+              item => item.deviceId && item.kind === 'videoinput'
+            )
+          }
+
+          console.log('devices', inputs, inputs.videoInputs[0])
+          isCreating = false
+        }
+
+        const createInstance2 = async function () {
+          if (isCreating) {
+            return
+          }
+          if (engine) {
+            engine.stopAudioCapture()
+            engine.stopVideoCapture()
+            isAudio = false
+            VERTC.destroyEngine(engine)
+            engine = null
+          }
+
+          // rtc那边给的appid:5a7451222679214f668e7085
+          // vxi的appid:652f79616349b2015ef26d20
+          engine = VERTC.createEngine('652f79616349b2015ef26d20')
+
+          navigator.mediaDevices
+            .getUserMedia({ audio: true, video: true })
+            .then(function (stream) {
+              console.log(stream.getTracks())
+              /* 使用这个 stream stream */
+            })
+            .catch(function (err) {
+              /* 处理 error */
+              console.log(err)
+            })
+
+          isCreating = false
+        }
+
+        startCapture.onclick = async () => {
+          count = 5
+          countDom.innerHTML = count
+          if (timer) {
+            clearInterval(timer)
+            timer = null
+          }
+          timer = setInterval(async () => {
+            if (count > 0) {
+              count--
+              countDom.innerHTML = count
+            } else {
+              if (timer) {
+                clearInterval(timer)
+                timer = null
+              }
+              await engine.startAudioCapture()
+              await engine.startVideoCapture()
+
+              engine.setLocalVideoPlayer(0, {
+                renderDom: 'domA'
+              })
+            }
+          }, 1000)
+        }
+
+        btn1.onclick = () => {
+          createInstance()
+        }
+
+        btn2.onclick = () => {
+          createInstance2()
+        }
+      })()
+    </script>
+  </body>
+</html>
