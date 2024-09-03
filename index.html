@@ -1,276 +1,348 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>音视频通话 AI</title>
-		<script
-			src="https://lf-unpkg.volccdn.com/obj/vcloudfe/sdk/@volcengine/rtc/4.60.7/1711627798987/VolengineRTC_Web_4.60.7.js">
-		</script>
-		<script src="listeningon.js"></script>
-		<style>
-			body {
-				font-family: Arial, sans-serif;
-				background-color: #f4f4f4;
-				margin: 0;
-				padding: 0;
-				display: flex;
-				justify-content: center;
-				align-items: center;
-				height: 100vh;
-			}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>音视频通话 AI</title>
+    <script src="https://lf-unpkg.volccdn.com/obj/vcloudfe/sdk/@volcengine/rtc/4.60.7/1711627798987/VolengineRTC_Web_4.60.7.js"></script>
+    <script src="listeningon.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
 
-			.container {
-				width: 90%;
-				max-width: 500px;
-				background-color: #ffffff;
-				padding: 20px;
-				border-radius: 10px;
-				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-			}
+      .container {
+        width: 90%;
+        max-width: 500px;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
 
-			h1 {
-				text-align: center;
-				color: #333;
-			}
+      h1 {
+        text-align: center;
+        color: #333;
+      }
 
-			.video-container {
-				display: flex;
-				justify-content: center;
-				align-items: center;
-				margin: 20px 0;
-			}
+      .video-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 20px 0;
+      }
 
-			.remote-div {
-				width: 100%;
-				max-width: 200px;
-				height: 350px;
-				border-radius: 10px;
-				background-color: #000;
-				overflow: hidden;
+      .remote-div {
+        width: 100%;
+        max-width: 200px;
+        height: 350px;
+        border-radius: 10px;
+        background-color: #000;
+        overflow: hidden;
+      }
 
-			}
+      .ai-img {
+        width: 100%;
+        max-width: 200px;
+        height: 350px;
+        border-radius: 10px;
+        overflow: hidden;
+      }
 
-			.ai-img {
-				width: 100%;
-				max-width: 200px;
-				height: 350px;
-				border-radius: 10px;
-				overflow: hidden;
-			}
+      #localVideo {
+        width: 100%;
+        max-width: 400px;
+        height: 200px;
+        border-radius: 10px;
+        background-color: #000;
+      }
 
-			#localVideo {
-				width: 100%;
-				max-width: 400px;
-				height: 200px;
-				border-radius: 10px;
-				background-color: #000;
-			}
+      .input-container {
+        display: flex;
+        margin-bottom: 20px;
+      }
 
-			.input-container {
-				display: flex;
-				margin-bottom: 20px;
-			}
+      input[type='text'] {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px 0 0 5px;
+        outline: none;
+      }
 
-			input[type="text"] {
-				flex: 1;
-				padding: 10px;
-				border: 1px solid #ccc;
-				border-radius: 5px 0 0 5px;
-				outline: none;
-			}
+      button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
 
-			button {
-				padding: 10px 20px;
-				background-color: #007bff;
-				color: white;
-				border: none;
-				border-radius: 5px;
-				cursor: pointer;
-			}
+      button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="video-container">
+        <div id="localVideo" style="position: relative">
+          <div style="position: absolute; bottom: 0; right: 0; z-index: 99999">
+            <div
+              style="
+                width: 28px;
+                height: 28px;
+                display: inline-block;
+                position: relative;
+              "
+            >
+              <img
+                class="member-audio-btn"
+                style="width: 100%; height: 100%"
+                src="./img/mic-on.png"
+                alt=""
+              />
+              <div
+                id="local-level"
+                style="
+                  position: absolute;
+                  bottom: 0;
+                  left: 0;
+                  width: 28px;
+                  height: 0%;
+                  overflow: hidden;
+                  transition: height 0.1s ease;
+                "
+              >
+                <img
+                  style="position: absolute; bottom: 0"
+                  alt=""
+                  src="./img/mic-green.png"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 视频显示区 -->
+      <div class="video-container">
+        <div class="remote-div" style="position: relative">
+          <img
+            class="ai-img"
+            src="https://p6-flow-imagex-sign.byteimg.com/ocean-cloud-tos/image_skill/9174e15d-bf58-4b6a-be5f-dd5a259569bf_1724817604074361524~tplv-a9rns2rl98-web-image.jpeg?rk3s=b14c611d&x-expires=1756353604&x-signature=Oz0R7GeF1TpKLUlc7AQWALwXSNE="
+            alt=""
+          />
+          <div id="remoteStream" style="width: 0; height: 0"></div>
+          <div style="position: absolute; bottom: 0; right: 0; z-index: 99999">
+            <div
+              style="
+                width: 28px;
+                height: 28px;
+                display: inline-block;
+                position: relative;
+              "
+            >
+              <img
+                class="member-audio-btn"
+                style="
+                  width: 100%;
+                  height: 100%;
+                  background-color: rgba(255, 255, 255, 0.5);
+                "
+                src="./img/mic-on.png"
+                alt=""
+              />
+              <div
+                id="volume-level"
+                style="
+                  position: absolute;
+                  bottom: 0;
+                  left: 0;
+                  width: 28px;
+                  height: 0%;
+                  overflow: hidden;
+                  transition: height 0.1s ease;
+                "
+              >
+                <img
+                  style="position: absolute; bottom: 0"
+                  alt=""
+                  src="./img/mic-green.png"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 视频显示区 -->
 
-			button:hover {
-				background-color: #0056b3;
-			}
-		</style>
-	</head>
-	<body>
-		<div class="container">
-			<div class="video-container">
-				<div id="localVideo" style="position: relative;">
-					<div style="position: absolute; bottom: 0; right: 0;z-index: 99999;">
-						<div style="width: 28px; height: 28px; display: inline-block; position: relative">
-							<img class="member-audio-btn" style="width: 100%; height: 100%;" src="./img/mic-on.png"
-								alt="">
-							<div id="local-level"
-								style="position: absolute; bottom: 0; left: 0; width: 28px; height: 0%; overflow: hidden; transition: height .1s ease;">
-								<img style="position: absolute; bottom: 0;" alt="" src="./img/mic-green.png">
-							</div>
-						</div>
-					</div>
-				</div>
+      <!-- 输入区 -->
+      <div class="input-container">
+        <input type="text" id="questionInput" placeholder="输入你的问题..." />
+        <button onclick="sendQuestion()">发送</button>
+      </div>
 
-			</div>
-			<!-- 视频显示区 -->
-			<div class="video-container">
-				<div class="remote-div" style="position: relative;">
-					<img class="ai-img"
-						src="https://p6-flow-imagex-sign.byteimg.com/ocean-cloud-tos/image_skill/9174e15d-bf58-4b6a-be5f-dd5a259569bf_1724817604074361524~tplv-a9rns2rl98-web-image.jpeg?rk3s=b14c611d&x-expires=1756353604&x-signature=Oz0R7GeF1TpKLUlc7AQWALwXSNE="
-						alt="" />
-					<div id="remoteStream" style="width: 0;height: 0;"></div>
-					<div style="position: absolute; bottom: 0; right: 0;z-index: 99999;">
-						<div style="width: 28px; height: 28px; display: inline-block; position: relative">
-							<img class="member-audio-btn"
-								style="width: 100%; height: 100%;background-color: rgba(255, 255, 255, 0.5);"
-								src="./img/mic-on.png" alt="">
-							<div id="volume-level"
-								style="position: absolute; bottom: 0; left: 0; width: 28px; height: 0%; overflow: hidden; transition: height .1s ease;">
-								<img style="position: absolute; bottom: 0;" alt="" src="./img/mic-green.png">
-							</div>
-						</div>
-					</div>
-				</div>
+      <!-- 显示AI回复的文字内容 -->
+      <!-- <div id="aiResponse" style="text-align: center; font-weight: bold;"></div> -->
 
-			</div>
-			<!-- 视频显示区 -->
+      <button onclick="createClient()" type="button">初始化</button>
+      <button onclick="toJoin()" type="button">进房</button>
+      <button onclick="doCapture()" type="button">采集</button>
+      <button onclick="doStopCapture()" type="button">停止采集</button>
+      <button onclick="leaveRoom()" type="button">退房</button>
+    </div>
 
-			<!-- 输入区 -->
-			<div class="input-container">
-				<input type="text" id="questionInput" placeholder="输入你的问题..." />
-				<button onclick="sendQuestion()">发送</button>
-			</div>
+    <script>
+      // window.addEventListener('beforeunload', function(e) {
+      // 	e.preventDefault();
+      // 	return '确定要离开页面吗？';
+      // });
+			let stream
+      async function createClient() {
+        // 测试ai，默认固定一个userid
+        window.userId = 'user1'
+        // 房间号码，自定义的
+        window.roomId = '123'
+        // 初始化rtc实例，传入rtc appid
+        const engine = VERTC.createEngine('652f79616349b2015ef26d20')
+        window.engine = engine
+        if (userId == 'user1') {
+          window.token = ''
+        } else {
+          window.token = ''
+        }
 
-			<!-- 显示AI回复的文字内容 -->
-			<!-- <div id="aiResponse" style="text-align: center; font-weight: bold;"></div> -->
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+          })
+          // 成功获取权限，可以使用 stream 进行视频和音频的处理
+          console.log('权限获取成功')
+          return stream
+        } catch (error) {
+          // 处理权限获取失败的情况
+          console.error('权限获取失败：', error)
+          return null
+        }
+        // let data =  await VERTC.enableDevices({
+        // 	video: true,
+        // 	audio: true
+        // })
+        // console.log(data);
+      }
 
-			<button onclick="createClient()" type="button">初始化</button>
-			<button onclick="toJoin()" type="button">进房</button>
-			<button onclick="leaveRoom()" type="button">退房</button>
-		</div>
+      async function doCapture() {
+        await engine.startAudioAndVideoCapture()
+        // 设置本地流的播放器
+        engine.setLocalVideoPlayer(VERTC.StreamIndex.STREAM_INDEX_MAIN, {
+          // renderDom 为容器元素的 id。
+          renderDom: 'localVideo'
+        })
+      }
 
+      async function doStopCapture() {
+        await engine.stopAudioCapture()
+        await engine.stopVideoCapture()
+        // 设置本地流的播放器
+        engine.setLocalVideoPlayer(VERTC.StreamIndex.STREAM_INDEX_MAIN, {
+          // renderDom 为容器元素的 id。
+          renderDom: undefined
+        })
+      }
 
-		<script>
-			// window.addEventListener('beforeunload', function(e) {
-			// 	e.preventDefault();
-			// 	return '确定要离开页面吗？';
-			// });
-			async function createClient() {
-				// 测试ai，默认固定一个userid
-				window.userId = 'user1'
-				// 房间号码，自定义的
-				window.roomId = '123'
-				// 初始化rtc实例，传入rtc appid
-				const engine = VERTC.createEngine('652f79616349b2015ef26d20');
-				window.engine = engine
-				if (userId == 'user1') {
-					window.token =
-						''
-				} else {
-					window.token =
-						''
-				}
+      function toJoin() {
+        if (userId === null) {
+          var r = confirm('需要先点击初始化按钮，先进行初始化')
+          if (r == true) {
+            createClient()
+          } else {
+            userId = null
+          }
 
+          return
+        }
+        join(window.userId, window.roomId)
+      }
 
-				try {
-					const stream = await navigator.mediaDevices.getUserMedia({
-						video: true,
-						audio: true
-					});
-					// 成功获取权限，可以使用 stream 进行视频和音频的处理
-					console.log('权限获取成功');
-					return stream;
-				} catch (error) {
-					// 处理权限获取失败的情况
-					console.error('权限获取失败：', error);
-					return null;
-				}
-				// let data =  await VERTC.enableDevices({
-				// 	video: true,
-				// 	audio: true
-				// })
-				// console.log(data);
-			}
+      function join(userId, roomId) {
+        console.log(22626262626266, roomId)
+        // engine.joinRoom(
+        // 	window.token,
+        // 	roomId, {
+        // 		userId: userId,
+        // 		extraInfo: '{"tsFlag":13222,"UserExtraInfo":1}'
+        // 	}, {
+        // 		isAutoPublish: true, // 采集音视频时自动发布到房间
+        // 		isAutoSubscribeAudio: true, // 自动订阅音频
+        // 		isAutoSubscribeVideo: true, // 自动订阅视频
+        // 		roomProfileType: VERTC.RoomProfileType.communication // 普通音视频通话模式，例如，语音聊天室
+        // 	}).then(data => {
+        // 	console.log('进房成功');
 
-			function toJoin() {
-				if (userId === null) {
-					var r = confirm("需要先点击初始化按钮，先进行初始化");
-					if (r == true) {
-						createClient()
-					} else {
-						userId = null
-					}
+        // 	//添加监听事件
+        // 	subscriEngineEvents(engine);
+        // 	createStream();
+        // }).catch(err => {
+        // 	console.error('进房错误：', (err));
+        // })
 
-					return
-				}
-				join(window.userId, window.roomId);
-			}
+        subscriEngineEvents(engine)
+        createStream()
+      }
 
-			function join(userId, roomId) {
-				console.log(22626262626266, roomId);
-				// engine.joinRoom(
-				// 	window.token,
-				// 	roomId, {
-				// 		userId: userId,
-				// 		extraInfo: '{"tsFlag":13222,"UserExtraInfo":1}'
-				// 	}, {
-				// 		isAutoPublish: true, // 采集音视频时自动发布到房间
-				// 		isAutoSubscribeAudio: true, // 自动订阅音频
-				// 		isAutoSubscribeVideo: true, // 自动订阅视频
-				// 		roomProfileType: VERTC.RoomProfileType.communication // 普通音视频通话模式，例如，语音聊天室
-				// 	}).then(data => {
-				// 	console.log('进房成功');
+      async function createStream() {
+        try {
+          // 开启本地采集，默认ai不开启摄像头
+          // await engine.startAudioCapture();
+          // await engine.startVideoCapture();
 
-				// 	//添加监听事件
-				// 	subscriEngineEvents(engine);
-				// 	createStream();
-				// }).catch(err => {
-				// 	console.error('进房错误：', (err));
-				// })
+          // 如果调用 joinRoom 时在 config 中设置了自动发布，这里就不需要发布了
+          // await engine.publishStream(VERTC.MediaType.AUDIO_AND_VIDEO)
 
-				subscriEngineEvents(engine);
-				createStream();
-			}
+          // 开启音频回调，默认500ms返回一次
+          engine.enableAudioPropertiesReport({
+            interval: 500
+          })
+        } catch (err) {
+          //TODO handle the exception
+          console.error(err)
+        }
+      }
 
-			async function createStream() {
-				try {
-					// 开启本地采集，默认ai不开启摄像头
-					// await engine.startAudioCapture();
-					// await engine.startVideoCapture();
-					await engine.startAudioAndVideoCapture()
-					// 设置本地流的播放器
-					engine.setLocalVideoPlayer(VERTC.StreamIndex.STREAM_INDEX_MAIN, {
-						// renderDom 为容器元素的 id。
-						renderDom: 'localVideo'
-					});
+      //退出音视频
+      function leaveRoom() {
+        window.engine
+          .leaveRoom()
+          .then(() => {
+            console.log('退房成功')
+            // 退房以后，关闭摄像头麦克风
+            window.engine.stopAudioCapture()
+            window.engine.stopVideoCapture()
 
-					// 如果调用 joinRoom 时在 config 中设置了自动发布，这里就不需要发布了
-					// await engine.publishStream(VERTC.MediaType.AUDIO_AND_VIDEO)
+						if(stream){
+							const tracks = stream.getTracks()
+							if(tracks.length){
+								tracks.forEach(track => {
+									track.stop()
+								});
+							}
+						}
 
-					// 开启音频回调，默认500ms返回一次
-					engine.enableAudioPropertiesReport({
-						interval: 500
-					})
-				} catch (err) {
-					//TODO handle the exception
-					console.error(err);
-				}
-			}
-
-			//退出音视频
-			function leaveRoom() {
-				window.engine
-					.leaveRoom()
-					.then(() => {
-						console.log("退房成功");
-						// 退房以后，关闭摄像头麦克风
-						window.engine.stopAudioCapture()
-						window.engine.stopVideoCapture()
-					})
-					.catch((error) => {
-						console.error("退房失败 " + error);
-						// 错误不可恢复，需要刷新页面。
-					});
-			}
-		</script>
-	</body>
+          })
+          .catch(error => {
+            console.error('退房失败 ' + error)
+            // 错误不可恢复，需要刷新页面。
+          })
+      }
+    </script>
+  </body>
 </html>
