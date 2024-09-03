@@ -205,7 +205,7 @@
       // 	e.preventDefault();
       // 	return '确定要离开页面吗？';
       // });
-			let stream
+      let stream
       async function createClient() {
         // 测试ai，默认固定一个userid
         window.userId = 'user1'
@@ -257,6 +257,15 @@
           // renderDom 为容器元素的 id。
           renderDom: undefined
         })
+
+        if (stream) {
+          const tracks = stream.getTracks()
+          if (tracks.length) {
+            tracks.forEach(track => {
+              track.stop()
+            })
+          }
+        }
       }
 
       function toJoin() {
@@ -325,18 +334,7 @@
           .then(() => {
             console.log('退房成功')
             // 退房以后，关闭摄像头麦克风
-            window.engine.stopAudioCapture()
-            window.engine.stopVideoCapture()
-
-						if(stream){
-							const tracks = stream.getTracks()
-							if(tracks.length){
-								tracks.forEach(track => {
-									track.stop()
-								});
-							}
-						}
-
+            doStopCapture()
           })
           .catch(error => {
             console.error('退房失败 ' + error)
