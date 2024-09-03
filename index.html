@@ -241,7 +241,9 @@
       }
 
       async function doCapture() {
-        await engine.startAudioAndVideoCapture()
+        // await engine.startAudioAndVideoCapture()
+				await engine.startAudioCapture()
+        await engine.startVideoCapture()
         // 设置本地流的播放器
         engine.setLocalVideoPlayer(VERTC.StreamIndex.STREAM_INDEX_MAIN, {
           // renderDom 为容器元素的 id。
